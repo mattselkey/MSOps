@@ -61,7 +61,7 @@ foreach($User in $ADUsers){
 Write-Host "Found user with SamAccountName: $($User.SamAccountName) and name $($User.Name). Enabled Account Status is set to: $($User.Enabled)" -ForegroundColor Green
 $GroupMembership = $User |  Get-ADPrincipalGroupMembership | Select-Object name, GroupScope, distinguishedName | Where-Object {$_.name -like "*$($App)*"}       
 
-$UserExtended = Get-ADUser mattkey -Properties *
+$UserExtended = Get-ADUser $User -Properties *
 
         $UserObject = [ordered]@{
             "Name" = $User.Name;
@@ -69,11 +69,13 @@ $UserExtended = Get-ADUser mattkey -Properties *
             "Title" = $UserExtended.Title
             "AccountEnabled" = $UserExtended.Enabled
             "StreetAddress" = $UserExtended.StreetAddress
+            "PostalCode" = $UserExtended.PostalCode
             "EmailAddress" = $UserExtended.EmailAddress
             "TelephoneNumber" = $UserExtended.TelephoneNumber
+            "Manager" = $UserExtended.Manager
             }
     
-       $userOutput = New-Object -TypeName psobject -Property $UserObject
+       $userOutput = New-Object -TypeName psobject -Property $UserObject | Format-Table -AutoSize
 
 if($null -ne $GroupMembership){
     $GroupMembership | Out-GridView 
