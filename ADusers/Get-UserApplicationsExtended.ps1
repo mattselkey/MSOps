@@ -40,14 +40,14 @@ function get-adUserbyname{
 $ADUsers = get-adUserbyname $Name
 
  while ($NULL -eq $ADUsers) {
-        Write-Host "user not found"
+        Write-Output "user not found"
         $Name = Read-Host "Input user name"
         $ADUsers = get-adUserbyname $Name
     }
 
 if($ADUsers.count -gt 1){
 
-    Write-Host "$($ADUsers.count) Users have been found, do you want to continue?" -ForegroundColor Green
+    Write-Output "$($ADUsers.count) Users have been found, do you want to continue?"
     $Name = Read-Host "Type L to list, Y to continue or N to exit" 
     switch ($Name){
             "L"{$ADUsers | Select-Object GivenName, Name, SamAccountName, Enabled ;exit}
@@ -58,7 +58,7 @@ if($ADUsers.count -gt 1){
 
 foreach($User in $ADUsers){
 
-Write-Host "Found user with SamAccountName: $($User.SamAccountName) and name $($User.Name). Enabled Account Status is set to: $($User.Enabled)" -ForegroundColor Green
+Write-Output "Found user with SamAccountName: $($User.SamAccountName) and name $($User.Name). Enabled Account Status is set to: $($User.Enabled)"
 $GroupMembership = $User |  Get-ADPrincipalGroupMembership | Select-Object name, GroupScope, distinguishedName | Where-Object {$_.name -like "*$($App)*"}       
 
 $UserExtended = Get-ADUser $User -Properties *
@@ -79,10 +79,10 @@ $UserExtended = Get-ADUser $User -Properties *
 
 if($null -ne $GroupMembership){
     $GroupMembership | Out-GridView 
-    Write-Host "Full user details are as follows:"
+    Write-Output "Full user details are as follows:"
     $userOutput | Format-Table 
 }
 else{
-    Write-Host "The User $($User.SamAccountName) is not member of any groups with the name $($App) `n" -ForegroundColor Green
+    Write-Error "The User $($User.SamAccountName) is not member of any groups with the name $($App)"
     }
 }
