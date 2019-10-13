@@ -13,9 +13,9 @@
    
 #>
 [CmdletBinding()]
-[ValidateSet('ON','OFF')]
 Param(
 [Parameter(Mandatory=$true)]
+[ValidateSet('ON','OFF')]
 [String]$PowerRequestType
 )
 
@@ -24,7 +24,9 @@ $vms = Get-VM | Where-Object {$_.Notes -icontains "Auto"}
 }
 
 PROCESS{
-ForEach($vm in $vms){
+
+
+    ForEach($vm in $vms){
 
     if($PowerRequestType -eq "ON"){
     Start-VM -Name $vm.Name
