@@ -2,9 +2,12 @@
 .SYNOPSIS
     Power manage Hyper-V VMs
 .DESCRIPTION
-    Start any VM with "Auto" within the VMs notes. Wait 15s seconds between each VMs boot.
+    Starts or Shutsdown any VM with "x:Auto" within the VMs notes. Wait 15s seconds between each VMs boot.
+    where x is the order the VM should be powered on and Auto confirms the machine should be power managed by the script.
 .EXAMPLE
-    PS C:\>.\Invoke-VMPowerManage.ps1
+    PS C:\>.\Invoke-VMPowerManage.ps1 -PowerRequestType ON
+
+    PS C:\>.\Invoke-VMPowerManage.ps1 -PowerRequestType OFF
 .INPUTS
     
 .OUTPUTS
@@ -12,6 +15,7 @@
 .NOTES
    
 #>
+
 [CmdletBinding()]
 Param(
 [Parameter(Mandatory=$true)]
@@ -21,9 +25,6 @@ Param(
 
 BEGIN{
 $vms = Get-VM | Select-Object Name, Notes | Where-Object {$_.Notes -match ":Auto"}
-
-
-
 }
 
 PROCESS{
