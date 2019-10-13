@@ -20,23 +20,33 @@ Param(
 )
 
 BEGIN{
-$vms = Get-VM | Where-Object {$_.Notes -icontains "Auto"}
+$vms = Get-VM | Select-Object Name, Notes | Where-Object {$_.Notes -match ":Auto"}
+
+
+
 }
 
 PROCESS{
 
-
-    ForEach($vm in $vms){
+    foreach($vm in $vms){
+        $vm.Notes = [Convert]::ToInt32($($vm.Notes).Trim(":Auto"))
+        }
+    
 
     if($PowerRequestType -eq "ON"){
-    Start-VM -Name $vm.Name
-    Start-Sleep -s 15
+        $vms | Sort-Object -Property Notes | ForEach-Object    {
+        Write-Output "$($_.Notes) Starting VM $($_.Name)"
+        Start-VM -Name $_.Name
+        Start-Sleep -s 15
+        }
     }
     
-    if($PowerRequestType -eq "OFF"){
     
-        Stop-VM  -Name $vm.Name
-       }
+    if($PowerRequestType -eq "OFF"){
+        $vms | Sort-Object -Property Notes -Descending | ForEach-Object    {  
+        Write-Output "$($_.Notes) Shutting down VM $($_.Name)"
+        Stop-VM  -Name $_.Name
+        }
     }
 }
 
