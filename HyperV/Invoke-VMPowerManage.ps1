@@ -12,10 +12,33 @@
 .NOTES
    
 #>
+[CmdletBinding()]
+[ValidateSet('ON','OFF')]
+Param(
+[Parameter(Mandatory=$true)]
+[String]$PowerRequestType
+)
 
+BEGIN{
 $vms = Get-VM | Where-Object {$_.Notes -icontains "Auto"}
+}
 
+PROCESS{
 ForEach($vm in $vms){
-Start-VM -Name $vm.Name
-Start-Sleep -s 15
+
+    if($PowerRequestType -eq "ON"){
+    Start-VM -Name $vm.Name
+    Start-Sleep -s 15
+    }
+    
+    if($PowerRequestType -eq "OFF"){
+    
+        Stop-VM  -Name $vm.Name
+       }
+    }
+}
+
+
+END{
+
 }
