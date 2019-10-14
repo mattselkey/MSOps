@@ -19,30 +19,61 @@ Param(
 [Parameter(Mandatory=$true)]
 [String]$Name,
 [Parameter(Mandatory=$false,ValueFromPipeline=$true)]
-[String]$App = "*"
+[String]$App = "*",
+[Parameter(Mandatory=$false,ValueFromPipeline=$true)]
+[String]$Domain = "$env:USERDNSDOMAIN",
+[Parameter(Mandatory=$false)]
+[String]$VerboseOutput
+
 )
 
 function get-adUserbyname{
         Param(
             [Parameter(Mandatory)]
-            [String]$NameFilter
+            [String]$NameFilter,
+            [Parameter(Mandatory=$false,ValueFromPipeline=$true)]
+            [String]$Domain = "$env:USERDNSDOMAIN"
             )
 
         $NameFilter = 'name -like "*' + $($Name) +'*"'
-        $ADUsers =  Get-ADUser -Filter $NameFilter 
+        $ADUsers =  Get-ADUser -Filter $NameFilter -Server $Domain
         if ($null -eq $ADUsers){
-    
-            $ADUsers =  Get-ADUser $Name 
+            try{
+                $ADUsers =  Get-ADUser $Name -Server $Domain  
+            }
+            catch{
+                Write-Verbose "User not found. $($_)"
+            }
         }
         return  $ADUsers
 }
 
+function get-adUserByDomain{
+
+
+
+
+}
+
+$VerbosePreference =  $VerboseOutput
 $ADUsers = get-adUserbyname $Name
 
  while ($NULL -eq $ADUsers) {
-        Write-Output "user not found"
-        $Name = Read-Host "Input user name"
-        $ADUsers = get-adUserbyname $Name
+        Write-Output "User not found"
+        $choice = Read-Host "Input user name (N) or try another Domain (D), or Exit (E)"
+        switch ($choice){
+                        "N"{$ADUsers = get-adUserbyname -NameFilter $Name}
+                        "D"{
+                            $Domain  = Read-Host "Enter Domain name"                          
+                            
+                            $ADUsers = get-adUserbyname -NameFilter $Name -Domain $Domain 
+                        }
+                         "E"{
+                             Pause
+                             exit   
+                         }   
+                    }
+        
     }
 
 if($ADUsers.count -gt 1){
@@ -57,9 +88,14 @@ if($ADUsers.count -gt 1){
 }     
 
 foreach($User in $ADUsers){
-
-Write-Output "Found user with SamAccountName: $($User.SamAccountName) and name $($User.Name). Enabled Account Status is set to: $($User.Enabled)"
-$GroupMembership = $User |  Get-ADPrincipalGroupMembership | Select-Object name, GroupScope, distinguishedName | Where-Object {$_.name -like "*$($App)*"}       
+ Write-Host   $User -ForegroundColor Green
+Write-Output "Found user in domain $($Domain) with SamAccountName: $($User.SamAccountName) and name $($User.Name). Enabled Account Status is set to: $($User.Enabled)"
+try{
+$GroupMembership = $User |  Get-ADPrincipalGroupMembership -Server $Domain | Select-Object name, GroupScope, distinguishedName | Where-Object {$_.name -like "*$($App)*"}       
+}
+catch{
+Write-Verbose Error occurred
+}
 
 $UserExtended = Get-ADUser $User -Properties *
 
