@@ -18,19 +18,29 @@ param (
     [Parameter()]
     [String]
     $FileServerName,
-    [String]
-    $FolderPath,
-    [Boolean]
-    $VerboseOutput
+    [Parameter(Mandatory=$false)]
+    [String]$FolderPath="*",
+    [Parameter(Mandatory=$false)]
+    [Boolean]$CredentialsRequired=$false,
+    [Parameter(Mandatory=$false,ValueFromPipeline=$true)]
+    [Boolean]$VerboseOutput=$false
 )
 
 BEGIN{
-    $VerbosePreference =  $VerboseOutput
-    $sessn = New-CimSession -ComputerName $FileServerName
+    if($VerboseOutput){$VerbosePreference = "Continue"}
+
 }
 
 
 PROCESS{
+
+    if($CredentialsRequired){
+        $sessn = New-CimSession -ComputerName $FileServerName -Credential (Get-Credential)
+        }
+    else{
+        $sessn = New-CimSession -ComputerName $FileServerName 
+    }
+
 
     $openfiles = Get-SmbOpenFile -CimSession $sessn | Where-Object {$_.Path -like $FolderPath}
     ForEach($openfile in $openfiles ) {

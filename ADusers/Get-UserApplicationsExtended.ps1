@@ -20,7 +20,7 @@ Param(
 [String]$Name,
 [Parameter(Mandatory=$false,ValueFromPipeline=$true)]
 [String]$App = "*",
-[Parameter(Mandatory=$false,ValueFromPipeline=$true)]
+[Parameter(Mandatory=$false)]
 [String]$Domain = "$env:USERDNSDOMAIN",
 [Parameter(Mandatory=$false)]
 [String]$VerboseOutput
@@ -106,17 +106,19 @@ $UserExtended = Get-ADUser $User -Properties *
             "AccountEnabled" = $UserExtended.Enabled
             "StreetAddress" = $UserExtended.StreetAddress
             "PostalCode" = $UserExtended.PostalCode
+            "City" = $UserExtended.City
+            "Country" = $UserExtended.co
             "EmailAddress" = $UserExtended.EmailAddress
             "TelephoneNumber" = $UserExtended.TelephoneNumber
+            "Fax" = $UserExtended.Fax
             "Manager" = $UserExtended.Manager
             }
     
-       $userOutput = New-Object -TypeName psobject -Property $UserObject | Format-Table -AutoSize
-
+       $userOutput = New-Object -TypeName psobject -Property $UserObject
 if($null -ne $GroupMembership){
     $GroupMembership | Out-GridView 
     Write-Output "Full user details are as follows:"
-    $userOutput | Format-Table 
+    $userOutput 
 }
 else{
     Write-Error "The User $($User.SamAccountName) is not member of any groups with the name $($App)"
