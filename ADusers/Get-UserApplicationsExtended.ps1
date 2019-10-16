@@ -81,7 +81,7 @@ if($ADUsers.count -gt 1){
     Write-Output "$($ADUsers.count) Users have been found, do you want to continue?"
     $Name = Read-Host "Type L to list, Y to continue or N to exit" 
     switch ($Name){
-            "L"{$ADUsers | Select-Object GivenName, Name, SamAccountName, Enabled ;exit}
+            "L"{$ADUsers  | Select-Object GivenName, Name, SamAccountName, Enabled | Sort-Object -Property GivenName ;exit}
             "Y"{break; }
             "N"{pause;exit}
     }
