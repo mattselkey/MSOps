@@ -19,7 +19,7 @@
 Param(
 [Parameter(Mandatory=$true)]
 [String]$ManagementServerName,
-[Parameter(Mandatory=$false,ValueFromPipeline=$true)]
+[Parameter(Mandatory=$false)]
 [String]$Recipient = "*"
 )
 
@@ -54,7 +54,7 @@ Expression={$pagerSub.ToRecipients |
 Expression={
             $pagerSub.ToRecipients | 
              ForEach-Object { 
-                    Get-SCOMNotificationSubscriber -ComputerName $ManagementServerName -Name $_.Name |
+                    $_ |
                         ForEach-Object {$_.Devices | Where-Object {  $_.ScheduleEntries -ne $null} | Select-Object ScheduleEntries   |
                                 ForEach-Object{
                                         #$_.DailyStartTime
@@ -68,7 +68,7 @@ Expression={
 Expression={
             $pagerSub.ToRecipients | 
              ForEach-Object { 
-                    Get-SCOMNotificationSubscriber -ComputerName $ManagementServerName -Name $_.Name |
+                    $_ |
                         ForEach-Object {$_.Devices | Where-Object {  $_.ScheduleEntries -ne $null} | Select-Object ScheduleEntries   |
                                 ForEach-Object{
                                         #$_.DailyStartTime

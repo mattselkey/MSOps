@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Get a partition free space and
+    Get a partitions' Total and Free disk space
 .DESCRIPTION
     Long description
 .EXAMPLE
@@ -21,9 +21,8 @@ Param(
 [String]$partition
 )
 
-
 $disk = Get-WmiObject Win32_LogicalDisk -ComputerName $ComputerName  -Filter "DeviceID='$($partition):'" |
 Select-Object Size,FreeSpace
 
-$disk.Size/1GB
-$disk.FreeSpace/1GB
+Write-Output Total Disk Space ($disk.Size/1GB)
+Write-Output Free Disk Space $disk.FreeSpace/1GB
