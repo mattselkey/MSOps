@@ -1,18 +1,17 @@
 <#
 .SYNOPSIS
-    Extend a VMM guests harddisk partiton.
+Extend a VMM guests harddisk partiton.
 .DESCRIPTION
-    This script first checks the VM host storage to ensure that enough free space is available for the expansion.
-
+This script first checks the VM host storage to ensure that enough free space is available for the expansion.
 .EXAMPLE
-    PS C:\> <example usage>
-    Explanation of what the example does
+PS C:\> <example usage>
+Explanation of what the example does
 .INPUTS
-    Inputs (if any)
+Inputs (if any)
 .OUTPUTS
-    Output (if any)
+Output (if any)
 .NOTES
-    Assumes that the VMM cmdlets are already imported on the machine this script is run from.
+Assumes that the VMM cmdlets are already imported on the machine this script is run from.
 #>
 [CmdletBinding()]
 Param(
@@ -33,7 +32,9 @@ $VMStorage = $vm | Get-SCVirtualHardDisk | Select-Object Name, HostVolume,
 @{label="SizeGB";Expression={ "{0:F0}" -f ($($_.Size)/1GB) }},`
 @{label="MaxGB";Expression={ "{0:F0}" -f ($($_.MaximumSize/1GB))}},`
 @{label="PercentageGBFree";Expression={"{0:F0}" -f (100 -(   (100/("{0:F0}" -f  ($($_.MaximumSize)/1GB)) )*("{0:F1}" -f ($($_.Size)/1GB))))}}
- 
+
+Write-Host vm storage is: -ForegroundColor Green 
+$VMStorage
 
 $Storage = Get-SCStorageVolume -VMMServer $VMMmanagementServer | Select-Object Volumelabel, Name, VMHost,`
 @{label="CapacityGB";Expression={ "{0:F0}" -f ($($_.Capacity)/1GB) }},`
@@ -41,9 +42,10 @@ $Storage = Get-SCStorageVolume -VMMServer $VMMmanagementServer | Select-Object V
 @{label="PercentageGBFree";Expression={"{0:F0}" -f (   (100/("{0:F0}" -f  ($($_.Capacity)/1GB)) )*("{0:F1}" -f ($($_.FreeSpace)/1GB)))}} | 
 Where-Object {$_.Name -eq $VMStorage.HostVolume } | Get-Unique
 
-$Storage 
+Write-Host VMM Cluster storage is: -ForegroundColor Green 
+$Storage
 
 
- $VMcimSession = New-CimSession -ComputerName $VMName
-
- Get-Partition -Session $VMcimSession | Select-Object PartitionNumber, DriveLetter, Size | Format-Table
+$VMcimSession = New-CimSession -ComputerName $VMName
+Write-Host Remote parition is: -ForegroundColor Green 
+Get-Partition -Session $VMcimSession | Select-Object PartitionNumber, DriveLetter, Size, IsSystem | Where-Object {"" -ne $_.DriveLetter}
