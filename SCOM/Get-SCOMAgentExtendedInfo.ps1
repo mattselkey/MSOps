@@ -1,17 +1,16 @@
 <#
 .SYNOPSIS
-    This script checks if a server is managed by SCOM and then returns extended details about its SCOM configuration
+    A script to return details on a managed scom server.
 .DESCRIPTION
-    Long description
+    This script checks if a server is managed by SCOM and then returns healthService status and the Groups the server belongs to.
 .EXAMPLE
-    PS C:\> <example usage>
-    Explanation of what the example does
+    PS C:.\Get-SCOMAgentExtendedInfo.ps1 -SCOMSERVERName subdn575 -ScomAgentName  SUBDN510
 .INPUTS
-    Inputs (if any)
+   management server name and netbios/fqdn of server
 .OUTPUTS
-    Output (if any)
+    health service staus and Groups the server belongs to
 .NOTES
-    General notes
+    Operations Manager modules need to be available.
 #>
 
 [CmdletBinding()]
@@ -21,6 +20,8 @@ param (
     [Parameter()]
     [String]$ScomAgentName   
 )
+
+Import-module OperationsManager
 
 function get-scomHealthService{
 param (
@@ -36,20 +37,33 @@ param (
     return $service
 }
 
+function Get-SCOMAgentComputerGroups{
+param (
+    [Parameter()]
+    [String]$SCOMSERVERName,
+    [Parameter()]
+    [String]$ScomAgentName  
+)
+
+$computerClass = Get-SCOMClass -ComputerName $SCOMSERVERName -Name “Microsoft.Windows.Computer”
+$computer = Get-SCOMClassInstance -ComputerName $SCOMSERVERName -Class $computerClass | Where-Object {($_.FullName -eq $ScomAgentName) -or ($_.'[Microsoft.Windows.Computer].NetbiosComputerName'.value -eq $ScomAgentName)}
+
+$relation1 = Get-SCOMRelationship  -ComputerName $SCOMSERVERName  -Name “Microsoft.SystemCenter.ComputerGroupContainsComputer”
+$relation2 = Get-SCOMRelationship  -ComputerName $SCOMSERVERName  -Name “Microsoft.SystemCenter.InstanceGroupContainsEntities”
+Get-SCOMRelationshipInstance  -ComputerName subdn573 -TargetInstance $computer | 
+Where-Object {!$_.isDeleted -and ( ($_.RelationshipId -eq $relation1.Id) -or ($_.RelationshipId -eq $relation2.Id) )} | Sort-Object SourceObject
+}
 
 $Agent = Get-SCOMAgent -ComputerName $SCOMSERVERName -DNSHostName "$($ScomAgentName)*"
 
 if($null -eq $Agent){
-
     get-scomHealthService -ScomAgentName $ScomAgentName
-
-
 }
 else{
-
-$HealthSRV = get-scomHealthService -ScomAgentName $ScomAgentName
-$HealthSRV
-
-
+    $HealthSRV = get-scomHealthService -ScomAgentName $ScomAgentName
+    $HealthSRV
+    $groups = Get-SCOMAgentComputerGroups -SCOMSERVERName $SCOMSERVERName -ScomAgentName $ScomAgentName | Select-Object @{Name="Groups"; Expression={ $_.SourceObject}  } | Format-Table
+    $groups
 }
+
 
