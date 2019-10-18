@@ -37,6 +37,7 @@ param (
     return $service
 }
 
+#Function below Modified from https://community.squaredup.com/answers/question/how-do-i-find-what-group-ive-put-a-server-into/
 function Get-SCOMAgentComputerGroups{
 param (
     [Parameter()]
@@ -50,7 +51,7 @@ $computer = Get-SCOMClassInstance -ComputerName $SCOMSERVERName -Class $computer
 
 $relation1 = Get-SCOMRelationship  -ComputerName $SCOMSERVERName  -Name “Microsoft.SystemCenter.ComputerGroupContainsComputer”
 $relation2 = Get-SCOMRelationship  -ComputerName $SCOMSERVERName  -Name “Microsoft.SystemCenter.InstanceGroupContainsEntities”
-Get-SCOMRelationshipInstance  -ComputerName subdn573 -TargetInstance $computer | 
+Get-SCOMRelationshipInstance  -ComputerName $SCOMSERVERName -TargetInstance $computer | 
 Where-Object {!$_.isDeleted -and ( ($_.RelationshipId -eq $relation1.Id) -or ($_.RelationshipId -eq $relation2.Id) )} | Sort-Object SourceObject
 }
 
