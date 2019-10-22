@@ -25,22 +25,21 @@ param (
 $credentials = Get-Credential
 
 try{
-if($Now){
-        Restart-Computer -ComputerName $ComputerName -Credential $credentials -Force
-}else{
-        Restart-Computer -ComputerName $ComputerName -Credential $credentials
+    if($Now){
+            Restart-Computer -ComputerName $ComputerName -Credential $credentials -Force
+    }else{
+            Restart-Computer -ComputerName $ComputerName -Credential $credentials
+    }
 }
 catch{
-
-
 
 }
 
 try{
-Test-Connection $ComputerName -Count 20 -Delay 1
+    Test-Connection $ComputerName -Count 20 -Delay 1 -ErrorAction SilentlyContinue
 }
-catch{
+catch [System.Net.NetworkInformation.PingException]{
 
-    Write-Information Rebooted
+    Write-Error Not repsonding  
     
 }
