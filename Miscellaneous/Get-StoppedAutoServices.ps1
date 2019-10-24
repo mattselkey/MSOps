@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Coonect to a remote server, check fors stopped services.
+    Connect to a remote server, check fors stopped services.
 .DESCRIPTION
     Long description
 .EXAMPLE
