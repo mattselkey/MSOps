@@ -18,16 +18,33 @@ param (
     [Parameter()]
     [String]
     $ComputerName,
+    [Parameter()]
     [String]
-    $LogName
+    [ValidateSet("Application", "Security", "System","Operations Manager")]
+    $LogName,
+    [Parameter()]
+    [Int32]
+    $EventID,
+    [Parameter()]
+    [Int32]
+    $daysOld
+
 )
 
-$credentials = Get-Credential
 
-Invoke-Command -ComputerName $Computername  -Credential $credentials -scriptblock {
+$StartTime = (Get-Date).AddDays(-$($daysOld))
 
-
-    Get-WinEvent -ComputerName $CompputerName -LogName $LogName -
+$ScriptBlock  = {
+    Get-WinEvent -FilterHashtable @{
+        LogName=$args[0]
+        Id=$args[1]
+        StartTime=$args[2]
+    }
 }
 
+
+
+$credentials = Get-Credential
+Test-WSMan  -ComputerName $ComputerName
+Invoke-Command -ComputerName $Computername -Credential $credentials -ArgumentList $LogName,$EventID,$StartTime -scriptblock $ScriptBlock 
 
