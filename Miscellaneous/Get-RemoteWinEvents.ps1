@@ -26,14 +26,21 @@ param (
     [Int32]
     $EventID,
     [Parameter()]
+    [String]
+    [ValidateSet("Days", "Hours")]
+    $TimeFrame,
+    [Parameter()]
     [Int32]
-    $daysOld
+    $Measure
 
 )
 
-
-$StartTime = (Get-Date).AddDays(-$($daysOld))
-
+if($TimeFrame -eq "Days"){
+$StartTime = (Get-Date).AddDays(-$($Measure))
+}
+if($TimeFrame -eq "Hours"){
+$StartTime = ((Get-Date).AddHours(-$Measure))
+}
 $ScriptBlock  = {
     Get-WinEvent -FilterHashtable @{
         LogName=$args[0]
@@ -44,7 +51,7 @@ $ScriptBlock  = {
 
 
 
-$credentials = Get-Credential
+$credentials = Get-Credential -
 Test-WSMan  -ComputerName $ComputerName
 Invoke-Command -ComputerName $Computername -Credential $credentials -ArgumentList $LogName,$EventID,$StartTime -scriptblock $ScriptBlock 
 
