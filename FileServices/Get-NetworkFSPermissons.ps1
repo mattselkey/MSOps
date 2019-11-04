@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    gte network folder file permissions, groups, users
+    get network folder file permissions, groups, users
 .DESCRIPTION
     Long description
 .EXAMPLE
@@ -16,11 +16,40 @@
 [CmdletBinding()]
 param (
     [Parameter()]
-    [TypeName]
-    $NetworkFSPath
+    [String]
+    $NetworkFSPath,
+    [Parameter()]
+    [String]
+    $Domain="$env:USERDOMAIN"
 )
 
 
+BEGIN{
+$GroupsMembers = @()
+}
+
+process{
+
 $permissions = (Get-Acl -Path "$NetworkFSPath").Access | Select-Object FileSystemRights, IdentityReference, IsInherited
-Write-Output $permissions
+
+
+foreach ($permission in $permissions){
+
+#Write-Host (($permission.IdentityReference).value).GetType();
+
+
+if ($($permission.IdentityReference).value -imatch $Domain ){
+    Write-Host $($permission.IdentityReference).value
+    $groupidentity = $($($permission.IdentityReference).value).TrimStart("$Domain\")
+    Write-Host $groupidentity 
+    $GroupsMembers += (Get-ADGroupMember -Identity $groupidentity)
+    }
+    }
+}
+
+END{
+$permissions | Out-GridView
+$GroupsMembers | Select-Object name | Out-GridView
+#$GroupsMembers | Sort-Object Name ; 
+}
 
