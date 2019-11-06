@@ -1,17 +1,20 @@
 <#
 .SYNOPSIS
-    Short description
+    Get the scom groups a server belongs to.
 .DESCRIPTION
-    Long description
+    gets the scom groups and associated management packs these accounts belong to.
 .EXAMPLE
-    PS C:\> <example usage>
-    Explanation of what the example does
+    PS C:\Get-SCOMNotificationSubscriptions.ps1 -ManagementServerName serverNetBiosName
+    
 .INPUTS
-    Inputs (if any)
+    -SCOMmanagementServer
+        SCOM management server name
+    -ComputerName
+        Name of server you wish to find the groups for
 .OUTPUTS
-    Output (if any)
+    ARRAY OF SCOM GROUPS CLASS, Name, ManagentPackname
 .NOTES
-    General notes
+    General note
 #>
 [CmdletBinding()]
 param (
@@ -22,30 +25,43 @@ param (
     $ComputerName
 )
 
-$containmentRel = Get-RelationshipClass -name:’Microsoft.SystemCenter.InstanceGroupContainsEntities’
-$computerClass = Get-MonitoringClass -name:”Microsoft.Windows.Computer”
-$criteria = [string]::Format(“PrincipalName = ‘{0}’”,$computerFQDN)
+BEGIN{
 
+class ScomGroup {
 
+[String]$Name
+[String]$ManagementPackName
+[String]$Health
 
- try {
- $computer = Get-MonitoringObject -comp -monitoringClass:$computerClass -criteria:$criteria
- $relatedObjects = $computer.GetMonitoringRelationshipObjectsWhereTarget($containmentRel,[Microsoft.EnterpriseManagement.Configuration.DerivedClassTraversalDepth]::Recursive,[Microsoft.EnterpriseManagement.Common.TraversalDepth]::Recursive)
- }
- catch {
- $_
- write-host “An error occurred while querying groups of $computerFQDN”
 }
 
-foreach($group in $relatedObjects)
- {
- [array]$Groups = $groups + $group.SourceMonitoringObject.DisplayName
- }
- if($groups) {
- return $groups
- } else {
- write-host “No groups available for $computerFQDN”
+$foundGroups = @()
+$SCOMGroups = Get-SCOMGroup -ComputerName $SCOMmanagementServer
+
 }
- }
 
+PROCESS{
 
+foreach ($SCOMGroup in $SCOMGroups) {
+
+    $GROUPNAME =  $SCOMGroup.DisplayName
+    If ( ($SCOMGroup | Get-SCOMClassInstance -ComputerName  $SCOMmanagementServer | Where-Object {($_.DisplayName -ilike $ComputerName) -OR ($_.DisplayName -ilike "$($ComputerName).$($env:USERDNSDOMAIN)") }) ){
+    Write-Information -MessageData  "FOUND IN $($GROUPNAME)" -InformationAction Continue
+     $GroupClass = New-Object ScomGroup
+     $GroupClass.Name = $SCOMGroup.DisplayName
+     $GroupClass.Health = $SCOMGroup.HealthState
+     $GroupClass.ManagementPackName = $SCOMGroup.GetClasses() | Select-Object 
+     $foundGroups += $GroupClass
+    }
+    else{
+    #Write-Information -MessageData  "NOT FOUND IN $($GROUPNAME)"
+    }
+}
+
+}
+
+END{
+
+$foundGroups
+
+}
