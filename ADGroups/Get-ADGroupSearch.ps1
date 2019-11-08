@@ -17,20 +17,7 @@
 param (
     [Parameter()]
     [String]
-    $Computername
+    $GroupName
 )
 
-$credentials = Get-Credential
-
-
-Invoke-Command -ComputerName $Computername -Credential $credentials -scriptblock {
-
-$sessions = (QUERY SESSION /server:$Computername)
-
-foreach($session in $sessions){
-
-   Write-Host Hello $session
-
-}
-
-}
+Get-ADGroup -Filter "Name -like '*$GroupName*'" | Select-Object Name
