@@ -24,7 +24,7 @@ Param(
 $vm = Get-SCVirtualMachine $VMName  
 
 if($vm.Generation -eq "1"){
-"Write-Output VM is generation 1, the machine needs to be powered down to complete a disk extension"
+Write-Output "VM is generation 1, the machine needs to be powered down to complete a disk extension"
 exit
 }
 
