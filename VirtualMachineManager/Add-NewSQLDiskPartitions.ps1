@@ -13,6 +13,11 @@
 .NOTES
     General notes
 #>
+[CmdletBinding()]
+param (
+    [Parameter(Mandatory=$False)]
+    [boolean]$OutInfo=$True
+)
 
 BEGIN{
 
@@ -31,7 +36,7 @@ BEGIN{
 
 PROCESS{
 try { 
-    
+    Write-Information -Message   "Setting disk to online." 
     Get-Disk | Where-Object {
         $_.OperationalStatus -eq "Offline" 
     } | ForEach-Object { Set-Disk -Number $_.Number -IsOffline $False } 
@@ -39,16 +44,15 @@ try {
 }
 catch 
 {
-
-    Write-Information -MessageData   "Setting disks online failed: " 
+    Write-Error -Message   "Setting disks online failed, error: $($_) " 
 }
 
 try { 
+    Write-Information -Message   "Initialize disks and format." 
     Get-Disk | Where-Object {$_.PartitionStyle -eq "RAW" } | ForEach-Object { Initialize-Disk -Number $_.Number -PartitionStyle GPT | Out-Null } }
 catch 
 {
-
-    $LongMessage += "Initializing disks failed: " + $_
+    Write-Error -Message   "Setting disks online failed, error: $($_) " 
 }
 }
 
