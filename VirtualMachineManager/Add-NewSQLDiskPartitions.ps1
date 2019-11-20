@@ -32,6 +32,39 @@ BEGIN{
 
     $ErrorActionPreference = "Stop"
 
+    function FormatDiskDrive{
+        [CmdletBinding()]
+        param (
+            [Parameter()]
+            [String]
+            $DiskNumber,
+            [Parameter()]
+            [string]$Label,
+            [Parameter()]
+            [string]$DriveLetter
+            )
+
+
+        $RootDir = "${DriveLetter}:\"
+    
+        if (-Not (Test-Path $RootDir))
+        {
+            try
+            {
+                $Partition = Get-Disk -Number $DiskNumber | New-Partition -UseMaximumSize
+                $Volume = $Partition | Format-Volume -FileSystem NTFS -NewFileSystemLabel $Label -Confirm:$false 
+                $Partition | Add-PartitionAccessPath -AccessPath "${DriveLetter}:"
+                if (-Not (Test-Path $RootDir))
+                {
+                  Write-Information  ""
+                }
+            }
+            catch 
+            {
+                Write-Error " $_"
+            }
+        }
+    }
 }
 
 PROCESS{
