@@ -46,7 +46,7 @@ BEGIN{
          $InformationPreference = "SilentlyContinue"
     }
 
-    #$ErrorActionPreference = "Stop"
+    $ErrorActionPreference = "Stop"
 
     [double]$TotalAdditionsInGB = ($DDriveSizeGB + $EDriveSizeGB + $UserLogSizeGB + $TempDBSizeGB + $TempDBLogSizeGB) 
 
