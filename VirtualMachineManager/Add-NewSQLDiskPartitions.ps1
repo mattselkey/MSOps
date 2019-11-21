@@ -72,6 +72,41 @@ function FormatDiskDrive{
     }
 
 
+function FormatDiskandMountPoint{
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [String]
+        $DiskNumber,
+        [Parameter()]
+        [String]
+        $DiskLabel,
+        [Parameter()]
+        [String]
+        $MountPoint     
+    )
+        if (-Not (Test-Path $MountPoint))
+        { $dummy = New-item -ItemType Directory $MountPoint }
+    
+        if (Test-Path $MountPoint)
+        {
+            try
+            {
+                $Partition = Get-Disk -Number $DiskNumber | New-Partition -UseMaximumSize
+                $Volume = $Partition | Format-Volume -FileSystem NTFS -NewFileSystemLabel $Label -Confirm:$false -AllocationUnitSize 65536 
+                $Partition | Add-PartitionAccessPath -AccessPath $MountPoint -PassThru | Set-Partition -NoDefaultDriveLetter:$True | Out-Null
+                if ( (Get-Item $MountPoint).LinkType -ne "Junction"){
+
+                    Write-Information -MessageData "cannot find Junction for $($MountPoint) on $($DiskNumber)/($Partition.PartitionNumber)"
+                    Pause
+                    Exit-PSSession                   
+                }
+            }
+            catch {
+                Write-Information -MessageData  "Error formatting and mounting disknumber $($DiskNumber) and $($MountPoint) $($_)"
+            }
+        }
+    }
 }
 
 PROCESS{
@@ -112,7 +147,12 @@ $acl.access | ? { $_.IdentityReference -eq "EveryOne"} | % {$acl.RemoveAccessRul
 $acl.SetAccessRule($accessRule)
 Set-ACL E:\ $acl
 
-
+#Create Mount Points
+FormatDiskandMountPoint -DiskNumber 3 -DiskLabel "User_DB"  -MountPoint "E:\User_DB"
+FormatDiskandMountPoint -DiskNumber 4 -DiskLabel "User_Log" -MountPoint "E:\User_Log"
+										
+FormatDiskandMountPoint -DiskNumber 5 -DiskLabel "Temp_DB"  -MountPoint "E:\Temp_DB"
+FormatDiskandMountPoint -DiskNumber 6 -DiskLabel "Temp_Log" -MountPoint "E:\Temp_Log"
 
 
 
