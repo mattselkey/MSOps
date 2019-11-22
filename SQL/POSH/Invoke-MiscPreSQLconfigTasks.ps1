@@ -21,8 +21,13 @@ param (
 )
 
 BEGIN{
-
+    
     $TempLocation = "C:\Temp"
+    if(-Not (Test-Path $TempLocation) ){
+    Write-Information "Temp work folder missing" -InformationAction "Continue"
+      New-Item -Path   $TempLocation -ItemType Directory
+    } 
+
     $SQLServiceAccount = $SVCAccount
 
     # Set a name for the Security Policy cfg file.
@@ -45,12 +50,18 @@ param (
     [String]
     $AccountName
 )
+        try{
         $line = Get-Content $fileName | Select-String $PolicyName
         # Use Get-Content to change the text in the cfg file and then save it
         (Get-Content C:\secexport.txt).Replace($line,"$line,$AccountName") | Out-File $fileName
 
         #secedit /configure /db secedit.sdb /cfg C:\secimport.txt /overwrite /areas USER_RIGHTS
         secedit /configure /db secedit.sdb /cfg $fileName 1> $null
+        }catch{
+
+            Write-Error -Message "Error setting secpoliy, Error is:  $($_)"
+
+        }
 
 }
 
