@@ -77,7 +77,7 @@ param (
         #secedit /configure /db secedit.sdb /cfg C:\secimport.txt /overwrite /areas USER_RIGHTS
         }else{
         Write-Information -MessageData "PolicyLine not found, adding new poliy line for : $($PolicyName)." -InformationAction "Continue"
-        Add-Content $PolicyFile "`n$($PolicyName) = $($SQLServiceAccount)"
+        Add-Content $TempPolicyFile "`n$($PolicyName) = $($SQLServiceAccount)"
         }
         
         
