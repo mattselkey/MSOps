@@ -17,15 +17,29 @@
 param (
     [Parameter()]
     [String]
-    $SVCAccount
+    $SVCAccount,
+    [Parameter(Mandatory=$False)]
+    [boolean]$OutInfo=$True
 )
 
 BEGIN{
     
+    if($OutInfo){
+        $VerbosePreference = "Continue"
+        $InformationPreference = "Continue"
+        Write-Information "messages will be passed to output stream."
+    }else{
+        $VerbosePreference = "SilentlyContinue"
+         $InformationPreference = "SilentlyContinue"
+    }
+
+
+
+
     try{
     $TempLocation = "C:\Temp"
     if(-Not (Test-Path $TempLocation) ){
-      Write-Information "Temp work folder missing" -InformationAction "Continue"
+      Write-Information "Temp work folder missing"
       New-Item -Path  $TempLocation -ItemType Directory
         } 
     }catch{
@@ -60,12 +74,12 @@ param (
     $AccountName
 )
         try{
-        Write-Information -MessageData "PolicyFile is in location: $($PolicyFile)." -InformationAction "Continue"
-        Write-Information -MessageData "TempPolicyFile will be created in location: $($TempPolicyFile)." -InformationAction "Continue"
+        Write-Information -MessageData "Policy File is in location: $($PolicyFile)."
+        Write-Information -MessageData "TempPolicyFile will be created in location: $($TempPolicyFile)." 
         $line = Get-Content $PolicyFile | Select-String $PolicyName
         
         if($line){
-        Write-Information -MessageData "PolicyLine is: $($line)." -InformationAction "Continue"
+        Write-Information -MessageData "PolicyLine is: $($line)."
 
         # Use Get-Content to change the text in the cfg file and then save it
         try{
@@ -76,19 +90,16 @@ param (
         }
         #secedit /configure /db secedit.sdb /cfg C:\secimport.txt /overwrite /areas USER_RIGHTS
         }else{
-        Write-Information -MessageData "PolicyLine not found, adding new poliy line for : $($PolicyName)." -InformationAction "Continue"
-        Add-Content $TempPolicyFile "`n$($PolicyName) = $($SQLServiceAccount)"
+        Write-Information -MessageData "Policy not found, adding new policy line for : $($PolicyName) to $($TempPolicyFile)."
+        Add-Content -Path $TempPolicyFile -Value "`n$($PolicyName) = $($AccountName)"
         }
-        
-        
-        
-        secedit /configure /db secedit.sdb /cfg $TempPolicyFile 1> $null
+    
+        secedit /configure /db secedit.sdb /cfg $TempPolicyFile
 
         }catch{
             Write-Error -Message "Error during secpolicy function, Error is:  $($_)"
         }
-    }
-    
+    }   
 }
 
 PROCESS{
@@ -102,9 +113,6 @@ PROCESS{
 
     #set lock memory prviledges
     Set-SecPolicy -PolicyFile $secPolicyfile -TempPolicyFile   $secPolicyTEMPfile -PolicyName "SeManageVolumePrivilege" -AccountName $SVCAccount
-
-
-
 }
 
 END{
