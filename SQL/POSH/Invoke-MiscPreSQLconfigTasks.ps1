@@ -34,8 +34,6 @@ BEGIN{
     }
 
 
-
-
     try{
     $TempLocation = "C:\Temp"
     if(-Not (Test-Path $TempLocation) ){
@@ -55,7 +53,8 @@ BEGIN{
 
     #export currect Security Policy config
     Write-Information "Exporting Security Policy to file"
-    secedit /export /cfg $secPolicyfile
+    secedit /export /cfg $secPolicyfile /areas user_rights
+    Copy-Item -Path $secPolicyfile -Destination $secPolicyTEMPfile
 
 function Set-SecPolicy{
 [CmdletBinding()]
@@ -71,30 +70,32 @@ param (
     $PolicyName,
     [Parameter()]
     [String]
-    $AccountName
+    $AccountName,
+    [Parameter()]
+    [String]
+    $LogPath
 )
         try{
-        Write-Information -MessageData "Policy File is in location: $($PolicyFile)."
-        Write-Information -MessageData "TempPolicyFile will be created in location: $($TempPolicyFile)." 
-        $line = Get-Content $PolicyFile | Select-String $PolicyName
+            Write-Information -MessageData "Policy File is in location: $($PolicyFile)."
+            Write-Information -MessageData "TempPolicyFile will be created in location: $($TempPolicyFile)." 
+            $line = Get-Content $PolicyFile | Select-String $PolicyName
         
         if($line){
-        Write-Information -MessageData "PolicyLine is: $($line)."
+            Write-Information -MessageData "PolicyLine is: $($line)."
 
         # Use Get-Content to change the text in the cfg file and then save it
         try{
-        (Get-Content $PolicyFile).Replace($line,"$line,$AccountName") | Out-File $TempPolicyFile
+            (Get-Content $PolicyFile).Replace($line,"$line,$AccountName") | Out-File $TempPolicyFile
         }catch{
             Write-Error -Message "Error setting secpolicy, Error is:  $($_)"
-
         }
         #secedit /configure /db secedit.sdb /cfg C:\secimport.txt /overwrite /areas USER_RIGHTS
         }else{
-        Write-Information -MessageData "Policy not found, adding new policy line for : $($PolicyName) to $($TempPolicyFile)."
-        Add-Content -Path $TempPolicyFile -Value "`n$($PolicyName) = $($AccountName)"
+            Write-Information -MessageData "Policy not found, adding new policy line for : $($PolicyName) to $($TempPolicyFile)."
+            Add-Content -Path $TempPolicyFile -Value "$($PolicyName) = $($AccountName)"
         }
     
-        secedit /configure /db secedit.sdb /cfg $TempPolicyFile
+        secedit /configure /db secedit.sdb /cfg $TempPolicyFile /log "$($Temppathlog)\log.text"
 
         }catch{
             Write-Error -Message "Error during secpolicy function, Error is:  $($_)"
@@ -104,15 +105,15 @@ param (
 
 PROCESS{
     #This doesn't make much sense if we will also add the SQL account to the secpolicy, also consider SOX
-    if (-Not(Get-LocalGroupMember -Name "Administrators" -Member $SVCAccount)){
+    if (-Not(Get-LocalGroupMember -Name "Administrators" -Member $SVCAccount -ErrorAction SilentlyContinue)){
     Add-LocalGroupMember -Group "Administrators"  -Member $SVCAccount
     }
 
     #set lock memory prviledges
-    Set-SecPolicy -PolicyFile $secPolicyfile -TempPolicyFile   $secPolicyTEMPfile -PolicyName "SeLockMemoryPrivilege" -AccountName $SVCAccount
+    Set-SecPolicy -PolicyFile $secPolicyfile -TempPolicyFile   $secPolicyTEMPfile -PolicyName "SeLockMemoryPrivilege" -AccountName $SVCAccount -LogPath $TempLocation
 
     #set lock memory prviledges
-    Set-SecPolicy -PolicyFile $secPolicyfile -TempPolicyFile   $secPolicyTEMPfile -PolicyName "SeManageVolumePrivilege" -AccountName $SVCAccount
+     Set-SecPolicy -PolicyFile $secPolicyfile -TempPolicyFile   $secPolicyTEMPfile -PolicyName "SeManageVolumePrivilege" -AccountName $SVCAccount -LogPath $TempLocation
 }
 
 END{
@@ -120,6 +121,7 @@ END{
 
 
 }
+
 
 
 
