@@ -102,6 +102,7 @@ $UserExtended = Get-ADUser $User -Properties *
         $UserObject = [ordered]@{
             "Name" = $User.Name;
             "SamAccountName" = $UserExtended.SamAccountName
+            "LastLogonDate" = $UserExtended.LastLogondate
             "Title" = $UserExtended.Title
             "AccountEnabled" = $UserExtended.Enabled
             "StreetAddress" = $UserExtended.StreetAddress
