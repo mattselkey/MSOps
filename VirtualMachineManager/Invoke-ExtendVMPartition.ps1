@@ -11,7 +11,7 @@ Inputs (if any)
 .OUTPUTS
 Output (if any)
 .NOTES
-Assumes that the VMM cmdlets are already imported on the machine this script is run from.
+Assumes that the VMM modules (VirtualMachineManager, binaries included in the SCVMM Management console) are already imported on the machine this script is run from.
 #>
 [CmdletBinding()]
 Param(
@@ -21,12 +21,19 @@ Param(
 [String]$VMName
 )
 
+BEGIN{
+
+
 $vm = Get-SCVirtualMachine $VMName  
 
 if($vm.Generation -eq "1"){
 Write-Output "VM is generation 1, the machine needs to be powered down to complete a disk extension"
 exit
 }
+
+}
+
+PROCESS{
 
 $VMStorage = $vm | Get-SCVirtualHardDisk | 
 Select-Object Name, HostVolume, @{label="SizeGB";Expression={ "{0:F0}" -f 
@@ -44,7 +51,7 @@ Select-Object Volumelabel, Name, VMHost, @{label="CapacityGB";Expression={ "{0:F
 ((100/("{0:F0}" -f  ($($_.Capacity)/1GB)) )*("{0:F1}" -f ($($_.FreeSpace)/1GB)))}} | 
 Where-Object {$_.Name -eq $VMStorage.HostVolume } | Get-Unique
 
-Write-Host VMM Cluster storage is: -ForegroundColor Green 
+Write-Information -MessageData "VMM Cluster storage is: $($Storage)" 
 $Storage
 
 
@@ -52,3 +59,15 @@ $VMcimSession = New-CimSession -ComputerName $VMName
 Write-Host Remote parition is: -ForegroundColor Green 
 Get-Partition -Session $VMcimSession | Select-Object PartitionNumber, DriveLetter, Size, IsSystem | 
 Where-Object {"" -ne $_.DriveLetter}
+
+}
+
+END{
+
+
+
+
+}
+
+
+
