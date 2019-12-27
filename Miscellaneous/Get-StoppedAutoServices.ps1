@@ -29,3 +29,5 @@ Invoke-Command -ComputerName $Computername  -Credential $credentials -scriptbloc
     Get-Service | Where-Object {($_.Status -eq "Stopped") -and ($_.StartType -eq "Automatic")}
 
 }
+
+$env:USERDNSDOMAIN
