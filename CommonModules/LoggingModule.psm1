@@ -1,8 +1,21 @@
-﻿#=================================================================================
-# CREATE LOG FILE
-# Creates a new log directory and new a log file based on input params
-# all scripting logs log output to this file during setup and config
-#=================================================================================
+﻿<#
+.SYNOPSIS
+    CREATE LOG FILE
+    Creates a new log directory and new a log file based on input params
+    all scripting logs log output to this file during setup and config
+
+.DESCRIPTION
+    Long description
+.EXAMPLE
+    PS C:\> <example usage>
+    Explanation of what the example does
+.INPUTS
+    Inputs (if any)
+.OUTPUTS
+    Output (if any)
+.NOTES
+    General notes
+#>
 function CreateNewLogs{
 param ([Parameter(Mandatory = $true)]
 			[String]$LogDirectory,
@@ -42,9 +55,6 @@ Catch
 }
 #End of Function
 
-#=================================================================================
-# LOG TO FILE FUNCTION
-#=================================================================================
 Function Logging{   
 param ([Parameter(Mandatory = $true)]
 			[string]$Type,
@@ -53,30 +63,29 @@ param ([Parameter(Mandatory = $true)]
 [String]$currentDT = get-date -format "yyyy-MM-dd HH:mm:ss"
 [String]$logMessage =  "$currentDT $Type - $logMessagesString"
 Add-Content -Path $LoggingFilePath -Value $logMessage 
-if($Type -eq "ERROR"){
-    Write-Host $logMessage -ForegroundColor Red
+    if($Type -eq "ERROR"){
+        Write-Host $logMessage -ForegroundColor Red
+        }
+    elseif($Type -eq "INFO"){
+        Write-Host $logMessage -ForegroundColor Yellow
     }
-elseif($Type -eq "INFO"){
-    Write-Host $logMessage -ForegroundColor Yellow
-}
-elseif($Type -eq "SUCCESS"){
-    Write-Host $logMessage `n -ForegroundColor Green
-}
-elseif($Type -eq "NOTICE"){
-    Write-Host $logMessage -ForegroundColor Cyan
-}
-elseif($Type -eq "BEGIN"){
-    Write-Host $logMessage -ForegroundColor Magenta
-}
-elseif($Type -eq "COMPLETED"){
-    Write-Host $logMessage `n -ForegroundColor Green
-}
-else{
- Write-Host $logMessage
-}
+    elseif($Type -eq "SUCCESS"){
+        Write-Host $logMessage `n -ForegroundColor Green
+    }
+    elseif($Type -eq "NOTICE"){
+        Write-Host $logMessage -ForegroundColor Cyan
+    }
+    elseif($Type -eq "BEGIN"){
+        Write-Host $logMessage -ForegroundColor Magenta
+    }
+    elseif($Type -eq "COMPLETED"){
+        Write-Host $logMessage `n -ForegroundColor Green
+    }
+    else{
+    Write-Host $logMessage
+    }
 
 }
 #End of Function
 
-Export-ModuleMember -function Logging
-Export-ModuleMember -function CreateNewLogs
+Export-ModuleMember -function *
