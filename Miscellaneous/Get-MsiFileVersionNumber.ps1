@@ -18,7 +18,7 @@ param (
     [Parameter()]
     [IO.FileInfo] $MSI
 )
-begin{
+BEGIN{
 
     if (!(Test-Path $MSI.FullName)) {
         throw "File '{0}' does not exist" -f $MSI.FullName
@@ -27,7 +27,7 @@ begin{
 
 }
 
-process{
+PROCESS{
 try {
     $windowsInstaller = New-Object -com WindowsInstaller.Installer
     $database = $windowsInstaller.GetType().InvokeMember(
@@ -51,4 +51,4 @@ try {
 
 }
 
-end{}
+END{}
