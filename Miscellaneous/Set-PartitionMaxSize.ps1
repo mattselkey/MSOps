@@ -48,11 +48,12 @@ try{
     Write-Information -MessageData "Getting partition named $($DriveLetter)"
     $partition = Get-Partition -CimSession $cimSession | Where-Object {$_.DriveLetter  -eq $DriveLetter}
     
-    $currentPartitionSize = ($partition.Size)/1GB   
+    $currentPartitionSize = "{0:N2} GB" -f (($partition.Size)/1GB)   
     $diskNumber = $partition.DiskNumber
     $partitonNumber = $partition.PartitionNumber
 
     Write-Information -MessageData "Disknumber is $($diskNumber) and Parition Number is $($partitonNumber)."
+    Write-Information -MessageData "Current Partition Size is: $($currentPartitionSize)."
 
     Write-Information -MessageData "Getting Partiton Supported Size."
     $size  = Get-PartitionSupportedSize -CimSession $cimSession -DriveLetter $DriveLetter
@@ -60,9 +61,12 @@ try{
     Write-Information -MessageData "Resizing Partititon."
     Resize-Partition -CimSession $cimSession -DiskNumber $diskNumber -PartitionNumber $partitonNumber -Size $size.SizeMax
 
-    $updatedPartiton = Get-Partition -CimSession $cimSession -DriveLetter $DriveLetter
 
-    Write-Information -MessageData "Previous partiton size was $($currentPartitionSize)GB, New partition size is $(($updatedPartiton.Size)/1GB)GB"
+    
+    $updatedPartiton = Get-Partition -CimSession $cimSession -DriveLetter $DriveLetter
+    $updatedPartitonSize = "{0:N2} GB" -f (($updatedPartiton.Size)/1GB)
+
+    Write-Information -MessageData "Previous partiton size was $($currentPartitionSize), New partition size is $($updatedPartitonSize)"
 
 }catch{
     Write-Error "Resize failed ($_)"
