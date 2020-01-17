@@ -56,7 +56,11 @@ try{
     Write-Information -MessageData "Current Partition Size is: $($currentPartitionSize)."
 
     Write-Information -MessageData "Getting Partiton Supported Size."
-    $size  = Get-PartitionSupportedSize -CimSession $cimSession -DriveLetter $DriveLetter
+    $size = Get-PartitionSupportedSize -CimSession $cimSession -DriveLetter $DriveLetter
+
+    $currentPartitionSupportSize = "{0:N2} GB" -f (($size.SizeMax)/1GB) 
+    
+    Write-Information -MessageData "Partition max suppported size is: $($currentPartitionSupportSize)"
 
     Write-Information -MessageData "Resizing Partititon."
     Resize-Partition -CimSession $cimSession -DiskNumber $diskNumber -PartitionNumber $partitonNumber -Size $size.SizeMax
