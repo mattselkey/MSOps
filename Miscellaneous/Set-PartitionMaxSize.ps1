@@ -47,19 +47,20 @@ try{
 
     Write-Information -MessageData "Getting partition named $($DriveLetter)"
     $partition = Get-Partition -CimSession $cimSession | Where-Object {$_.DriveLetter  -eq $DriveLetter}
+    
     $currentPartitionSize = $partition.Size
     $diskNumber = $partition.DiskNumber
     $partitonNumber = $partition.PartitionNumber
 
     Write-Information -MessageData "Disknumber is $($diskNumber) and Parition Number is $($partitonNumber)."
 
-    Write-Information -MessageData "Getting Partiton Supportd Size."
+    Write-Information -MessageData "Getting Partiton Supported Size."
     $size  = Get-PartitionSupportedSize -CimSession $cimSession -DriveLetter $DriveLetter
 
     Write-Information -MessageData "Resizing Partititon."
     Resize-Partition -CimSession $cimSession -DiskNumber $diskNumber -PartitionNumber $partitonNumber -Size $size.SizeMax
 
-    $updatedPartiton = Get-Partition -CimSession $credentials -DriveLetter $DriveLetter
+    $updatedPartiton = Get-Partition -CimSession $cimSession -DriveLetter $DriveLetter
 
     Write-Information -MessageData "Previous partiton size was $($currentPartitionSize), New partition size is $($updatedPartiton)"
 
