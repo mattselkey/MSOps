@@ -22,7 +22,7 @@ param (
     [String]$FolderPath="*",
     [Parameter(Mandatory=$false)]
     [Boolean]$CredentialsRequired=$false,
-    [Parameter(Mandatory=$false,ValueFromPipeline=$true)]
+    [Parameter(Mandatory=$false)]
     [Boolean]$VerboseOutput=$false
 )
 

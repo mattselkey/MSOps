@@ -26,5 +26,5 @@ $Crendentials = Get-Credential
 $disk = Get-WmiObject Win32_LogicalDisk -ComputerName $ComputerName -Credential  $Crendentials -Filter "DeviceID='$($partition):'" |
 Select-Object Size,FreeSpace
 
-Write-information -m Total Disk Space ($disk.Size/1GB)
-Write-Output Free Disk Space $disk.FreeSpace/1GB
+Write-Output "Total Disk Space $($($disk.Size)/1GB)"
+Write-Output "Free Disk Space $($($disk.FreeSpace)/1GB)"
