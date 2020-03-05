@@ -110,10 +110,10 @@ PROCESS{
     }
 
     #set lock memory prviledges
-    Set-SecPolicy -PolicyFile $secPolicyfile -TempPolicyFile   $secPolicyTEMPfile -PolicyName "SeLockMemoryPrivilege" -AccountName $SVCAccount -LogPath $TempLocation
+    Set-SecPolicy -PolicyFile $secPolicyfile -TempPolicyFile $secPolicyTEMPfile -PolicyName "SeLockMemoryPrivilege" -AccountName $SVCAccount -LogPath $TempLocation
 
     #set lock memory prviledges
-     Set-SecPolicy -PolicyFile $secPolicyfile -TempPolicyFile   $secPolicyTEMPfile -PolicyName "SeManageVolumePrivilege" -AccountName $SVCAccount -LogPath $TempLocation
+     Set-SecPolicy -PolicyFile $secPolicyfile -TempPolicyFile $secPolicyTEMPfile -PolicyName "SeManageVolumePrivilege" -AccountName $SVCAccount -LogPath $TempLocation
 }
 
 END{
