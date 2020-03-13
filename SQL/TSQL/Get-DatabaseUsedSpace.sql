@@ -1,3 +1,4 @@
+/*get database used sapce */
 USE [JobIt]
 GO
 SELECT 
