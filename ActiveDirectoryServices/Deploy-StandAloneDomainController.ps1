@@ -73,9 +73,9 @@ if ($checkADService.InstallState -ne "Installed"){
 
 Write-Information -MessageData "Installing services and management tools"
 
-Install-windowsfeature AD-Domain-Services
+Install-windowsfeature AD-Domain-Services -IncludeManagementTools
 
-}
+    }
 }catch{
 
 Write-Debug -Message "Error installing ad domain services. Error is $($_)"
