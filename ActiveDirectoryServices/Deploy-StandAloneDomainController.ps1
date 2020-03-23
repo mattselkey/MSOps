@@ -13,7 +13,15 @@
 .NOTES
     General notes
 #>
-
+[CmdletBinding()]
+param (
+    [Parameter()]
+    [String]
+    $Domain,
+    [Parameter()]
+    [String]
+    $DomainNetBios, 
+)
 
 BEGIN{
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force -Confirm:$false
@@ -22,15 +30,12 @@ $InformationPreference = "Continue"
 $DCInstallArguments = @{
 
 CreateDnsDelegation = $false
-DatabasePath = "C:\Windows\NTDS"
-DomainMode = "Win2012R2"
+DomainMode = "WinThreshold"
 DomainName = "yourdomain.com"
 DomainNetbiosName = "YOURDOMAIN"
-ForestMode = "Win2012R2"
+ForestMode = "WinThreshold"
 InstallDns = $true
-LogPath = "C:\Windows\NTDS"
 NoRebootOnCompletion = $false
-SysvolPath = "C:\Windows\SYSVOL"
 Force = $true
 
 
