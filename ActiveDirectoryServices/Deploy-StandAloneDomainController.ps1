@@ -15,30 +15,37 @@
 #>
 [CmdletBinding()]
 param (
-    [Parameter()]
+    [Parameter(Mandatory = $true)]
     [String]
-    $Domain,
-    [Parameter()]
+    $FQDNDomain,
+    [Parameter(Mandatory = $true)]
     [String]
-    $DomainNetBios, 
+    $DomainNetBios,
+    [Parameter(Mandatory = $true)]
+    [String]
+    $SafeModePass
 )
 
 BEGIN{
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force -Confirm:$false
+#Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force -Confirm:$false
 $InformationPreference = "Continue"
+$DebugPreference = "Continue"
+#$whatifpreference = 'True'
+
+$secureString = ConvertTo-SecureString $SafeModePass -AsPlainText -Force
+
 
 $DCInstallArguments = @{
 
 CreateDnsDelegation = $false
 DomainMode = "WinThreshold"
-DomainName = "yourdomain.com"
-DomainNetbiosName = "YOURDOMAIN"
-ForestMode = "WinThreshold"
+DomainName = $FQDNDomain
+DomainNetbiosName = $DomainNetBios
+ForestMode =  "WinThreshold"
 InstallDns = $true
 NoRebootOnCompletion = $false
 Force = $true
-
-
+SafeModeAdministratorPassword = $secureString
 }
 
 
@@ -61,11 +68,19 @@ exit
 
 
 #Install windows features
+try {
 if ($checkADService.InstallState -ne "Installed"){
 
 Write-Information -MessageData "Installing services and management tools"
 
-Install -windowsfeature AD-Domain-Services
+Install-windowsfeature AD-Domain-Services
+
+}
+}catch{
+
+Write-Debug -Message "Error installing ad domain services. Error is $($_)"
+
+exit
 
 }
 
@@ -73,9 +88,19 @@ Install -windowsfeature AD-Domain-Services
 #Install First Domain controller
 
 
+try {
+Write-Information -MessageData "Installing active directory forest"
 
-Install-ADDSForest @DCInstallArguments
+Install-ADDSForest @DCInstallArguments -Whatif
 
+}catch{
+
+Write-Debug -Message "Error installing ad ds forest. Error is $($_)"
+
+exit
+
+
+}
 
 
 
