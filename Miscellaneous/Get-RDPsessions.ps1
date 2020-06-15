@@ -35,7 +35,10 @@ try{
       #$SESSIONs =  quser /server:$server 2>> $env:HOMEDRIVE\rdpsessions.txt
      
        try{
-          $SESSIONs =  quser /server:$server 2>> $env:HOMEDRIVE\rdpsessions.txt
+          New-Item -ItemType File -Path "$env:HOMEDRIVE\rdpsessions.txt" -Force
+
+          $SESSIONs =  quser /server:$server 2>> "$env:HOMEDRIVE\rdpsessions.txt"
+          #SESSIONs =  quser /server:$server 2>> "$env:HOMEDRIVE\rdpsessions.txt"
        }
        catch [System.Management.Automation.RemoteException]{
            throw
@@ -67,8 +70,8 @@ try{
 }
 
 
-
-$sessionsFound = Get-Content "$env:HOMEDRIVE\sessionsFound.txt" | where {$_ -notlike "*000*"}
+New-Item -ItemType File -Path "$env:HOMEDRIVE\sessionsFound.txt" -Force
+$sessionsFound 2>> "$env:HOMEDRIVE\sessionsFound.txt"
 
 foreach ($server in $sessionsFound){
 
